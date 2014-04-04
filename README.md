@@ -2,7 +2,7 @@
 
 Writing logs.
 
-```
+```js
 var http = require('http'),
 	loghub = require('loghub');
 
@@ -25,7 +25,7 @@ srv.listen(8080);
 
 Reading logs.
 
-```
+```js
 var http = require('http'),
 	loghub = require('./loghub');
 
@@ -74,7 +74,7 @@ function minutes(val) {
 
 Truncating logs.
 
-```
+```js
 var http = require('http'),
 	loghub = require('./loghub');
 
@@ -90,7 +90,7 @@ hub.truncate(dateToTimestamp(new Date()), 'Source1');
 
 Getting log stats.
 
-```
+```js
 var http = require('http'),
 	loghub = require('./loghub');
 
