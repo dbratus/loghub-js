@@ -1,5 +1,9 @@
 # LogHub client for Node.js
 
+To learn about LogHub, visit [LogHub repository](https://github.com/dbratus/loghub).
+
+## Using the client
+
 Writing logs.
 
 ```js
