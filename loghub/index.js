@@ -7,7 +7,7 @@ var net = require('net'),
 	jstream = require('./jstream.js');
 
 function writeLog(sock, entries, callback) {
-	sock.write(JSON.stringify({ action: 'write' }) + '\0');
+	sock.write(JSON.stringify({ Action: 'write' }) + '\0');
 
 	for (var i = 0; i < entries.length; i++) {
 		sock.write(JSON.stringify(entries[i]) + '\0');
@@ -21,7 +21,7 @@ function readLog(sock, queries, callback) {
 
 	sock.on('data', onData);
 
-	sock.write(JSON.stringify({ action: 'read' }) + '\0');
+	sock.write(JSON.stringify({ Action: 'read' }) + '\0');
 	
 	for (var i = 0; i < queries.length; i++) {
 		sock.write(JSON.stringify(queries[i]) + '\0');
@@ -34,16 +34,22 @@ function readLog(sock, queries, callback) {
 	}
 
 	function onEntry(ent) {
-		callback(ent);
-
-		if (!ent) {
+		if (ent) {
+			callback({
+				timestamp: ent.Ts,
+				severity: ent.Sev,
+				source: ent.Src,
+				message: ent.Msg
+			});
+		} else {
+			callback();
 			sock.removeListener('data', onData);
 		}
 	}
 }
 
 function truncateLog(sock, source, limit, callback) {
-	sock.write(JSON.stringify({ action: 'truncate' }) + '\0');
+	sock.write(JSON.stringify({ Action: 'truncate' }) + '\0');
 	sock.write(JSON.stringify({ Src: source, Lim: limit }) + '\0', void 0, function() { callback(); });
 }
 
@@ -52,16 +58,21 @@ function getStat(sock, callback) {
 
 	sock.on('data', onData);
 
-	sock.write(JSON.stringify({ action: 'stat' }) + '\0');
+	sock.write(JSON.stringify({ Action: 'stat' }) + '\0');
 	
 	function onData(data) {
 		parser.write(data);
 	}
 
 	function onEntry(ent) {
-		callback(ent);
-
-		if (!ent) {
+		if (ent) {
+			callback({
+				address: ent.Addr,
+				size: ent.Sz,
+				limit: ent.Lim
+			});
+		} else {
+			callback();
 			sock.removeListener('data', onData);
 		}
 	}
@@ -245,10 +256,10 @@ exports.connect = function(port, host, options) {
 			});
 		},
 
-		truncate: function(source, limit) {
+		truncate: function(limit, source) {
 			pushOp('truncate', function(newOp) {
-				newOp.source = source;
 				newOp.limit = limit;
+				newOp.source = source || '';
 			});
 		},
 

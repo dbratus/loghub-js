@@ -17,18 +17,18 @@ var srv = http.createServer(function (req, resp) {
 
 		log.read(now - minutes(1), now, 0, 255, null, function (ent) {
 			if (ent) {
-				resp.write(ent.Msg + '\n');
+				resp.write(ent.timestamp + ' ' + ent.severity + ' ' + ent.source + ' ' + ent.message + '\n');
 			} else {
 				resp.end();
 			}
 		});
 	} else if (req.url === '/truncate') {
-		log.truncate('', dateToTimestamp(new Date()));
+		log.truncate(dateToTimestamp(new Date()));
 		resp.end();
 	} else if (req.url === '/stat') {
 		hub.stat(function (stat) {
 			if (stat) {
-				resp.write(stat.Addr + ': ' + stat.Sz + '/' + stat.Lim + '\n');
+				resp.write(stat.address + ': ' + stat.size + '/' + stat.limit + '\n');
 			} else {
 				resp.end();
 			}
