@@ -2,6 +2,12 @@
 
 To learn about LogHub, visit [LogHub repository](https://github.com/dbratus/loghub).
 
+## Getting the client
+
+```
+npm install loghub
+```
+
 ## Using the client
 
 Writing logs.
