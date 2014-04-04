@@ -37,7 +37,7 @@ Reading logs.
 
 ```js
 var http = require('http'),
-	loghub = require('./loghub');
+	loghub = require('loghub');
 
 //Connecting to hub at localhost:10000.
 var hub = loghub.connect(10000, 'localhost');
@@ -86,7 +86,7 @@ Truncating logs.
 
 ```js
 var http = require('http'),
-	loghub = require('./loghub');
+	loghub = require('loghub');
 
 //Connecting to hub at localhost:10000.
 var hub = loghub.connect(10000, 'localhost');
@@ -102,7 +102,7 @@ Getting log stats.
 
 ```js
 var http = require('http'),
-	loghub = require('./loghub');
+	loghub = require('loghub');
 
 var hub = loghub.connect(10000, 'localhost');
 
