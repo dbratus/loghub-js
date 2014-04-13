@@ -17,7 +17,17 @@ var http = require('http'),
 	loghub = require('loghub');
 
 //Connecting to log at localhost:10001.
-var log = loghub.connect(10001);
+var log = loghub.connect(10001, 'localhost', {
+	useTls: true,
+	//skipCertValidation: true, If the certificate is not signed by CA.
+	credentials: {
+		user: 'writer',
+		password: 'secret'
+	},
+	error: function(err) {
+		console.log(err);
+	}
+});
 
 var srv = http.createServer(function (req, resp) {
 	//Writing log entry:
@@ -40,7 +50,17 @@ var http = require('http'),
 	loghub = require('loghub');
 
 //Connecting to hub at localhost:10000.
-var hub = loghub.connect(10000, 'localhost');
+var hub = loghub.connect(10000, 'localhost', {
+	useTls: true,
+	//skipCertValidation: true, If the certificate is not signed by CA.
+	credentials: {
+		user: 'admin',
+		password: 'secret'
+	},
+	error: function(err) {
+		console.log(err);
+	}
+});
 
 var srv = http.createServer(function (req, resp) {
 	var now = dateToTimestamp(new Date());
@@ -89,7 +109,17 @@ var http = require('http'),
 	loghub = require('loghub');
 
 //Connecting to hub at localhost:10000.
-var hub = loghub.connect(10000, 'localhost');
+var hub = loghub.connect(10000, 'localhost', {
+	useTls: true,
+	//skipCertValidation: true, If the certificate is not signed by CA.
+	credentials: {
+		user: 'admin',
+		password: 'secret'
+	},
+	error: function(err) {
+		console.log(err);
+	}
+});
 
 //The first argument is the limit (timestamp) by which the logs are to be truncated.
 //
@@ -104,7 +134,17 @@ Getting log stats.
 var http = require('http'),
 	loghub = require('loghub');
 
-var hub = loghub.connect(10000, 'localhost');
+var hub = loghub.connect(10000, 'localhost', {
+	useTls: true,
+	//skipCertValidation: true, If the certificate is not signed by CA.
+	credentials: {
+		user: 'admin',
+		password: 'secret'
+	},
+	error: function(err) {
+		console.log(err);
+	}
+});
 
 var srv = http.createServer(function (req, resp) {
 	//The callback is called once per log. After the last entry,
