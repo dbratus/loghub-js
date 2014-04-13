@@ -4,24 +4,31 @@
 // that can be found in the LICENSE file.
 
 var net = require('net'),
+	tls = require('tls'),
 	jstream = require('./jstream.js');
 
-function writeLog(sock, entries, callback) {
-	sock.write(JSON.stringify({ Action: 'write' }) + '\0');
+function header(action, cred) {
+	return { Action: action, Usr: cred.user, Pass: cred.password };
+}
+
+function writeLog(sock, cred, entries, callback) {
+	sock.write(JSON.stringify(header('write', cred)) + '\0');
 
 	for (var i = 0; i < entries.length; i++) {
 		sock.write(JSON.stringify(entries[i]) + '\0');
 	}
 
-	sock.write('\0', void 0, function() { callback(); });
+	sock.write('\0', void 0, function() { 
+		callback();
+	});
 }
 
-function readLog(sock, queries, callback) {	
+function readLog(sock, cred, queries, callback) {
 	var parser = new jstream.Parser(onEntry);
 
 	sock.on('data', onData);
 
-	sock.write(JSON.stringify({ Action: 'read' }) + '\0');
+	sock.write(JSON.stringify(header('read', cred)) + '\0');
 	
 	for (var i = 0; i < queries.length; i++) {
 		sock.write(JSON.stringify(queries[i]) + '\0');
@@ -48,17 +55,19 @@ function readLog(sock, queries, callback) {
 	}
 }
 
-function truncateLog(sock, source, limit, callback) {
-	sock.write(JSON.stringify({ Action: 'truncate' }) + '\0');
-	sock.write(JSON.stringify({ Src: source, Lim: limit }) + '\0', void 0, function() { callback(); });
+function truncateLog(sock, cred, source, limit, callback) {
+	sock.write(JSON.stringify(header('truncate', cred)) + '\0');
+	sock.write(JSON.stringify({ Src: source, Lim: limit }) + '\0', void 0, function() { 
+		callback();
+	});
 }
 
-function getStat(sock, callback) {
+function getStat(sock, cred, callback) {
 	var parser = new jstream.Parser(onEntry);
 
 	sock.on('data', onData);
 
-	sock.write(JSON.stringify({ Action: 'stat' }) + '\0');
+	sock.write(JSON.stringify(header('stat', cred)) + '\0');
 	
 	function onData(data) {
 		parser.write(data);
@@ -79,10 +88,17 @@ function getStat(sock, callback) {
 }
 
 exports.connect = function(port, host, options) {
+	options = options || {};
+
 	var sock = null,
 		tailOp = null,
 		headOp = null,
 		curOp = null;
+
+	var cred = options.credentials || {
+		user: 'all',
+		password: ''
+	};
 
 	var connectSock = function(callback) {
 		if (!sock) {
@@ -91,15 +107,47 @@ exports.connect = function(port, host, options) {
 				port: port
 			};
 
+			var onError = function(err) {
+				sock = null;
+
+				if (curOp) {
+					if (curOp.callback) {
+						curOp.callback();
+					}
+
+					curOp = null;
+				}
+
+				if (options.error) {
+					options.error(err);
+				}
+			};
+
 			sock = net.connect(opt, function() {
-				callback(sock);
+				if (options.useTls) {
+					opt = {
+						socket: sock,
+						rejectUnauthorized: !options.skipCertValidation
+					};
+
+					sock = tls.connect(opt, function() {
+						callback(sock);
+					});
+					sock.on('error', onError);
+				} else {
+					callback(sock);
+				}
+			});			
+			sock.on('error', onError);
+			sock.once('end', function() {
+				if (curOp && curOp.callback) {
+					curOp.callback();
+					curOp = null;
+				}
+
+				sock = null; 
 			});
 
-			sock.on('error', function() {
-				sock = null;
-				callback(null);
-			});
-			sock.on('end', function() { sock = null; })
 		} else {
 			callback(sock);
 		}
@@ -148,58 +196,42 @@ exports.connect = function(port, host, options) {
 				switch (curOp.action) {
 					case 'write':
 						connectSock(function (sock) {
-							if (sock) {
-								writeLog(sock, curOp.entries, function() {
-									curOp = null;
-									processOperations();
-								});
-							} else {
+							writeLog(sock, cred, curOp.entries, function() {
 								curOp = null;
-							}
+								processOperations();
+							});
 						});
 						break;
 					case 'read':
 						connectSock(function (sock) {
-							if (sock) {
-								readLog(sock, curOp.queries, function(ent) {
-									curOp.callback(ent);
+							readLog(sock, cred, curOp.queries, function(ent) {
+								curOp.callback(ent);
 
-									if (!ent) {
-										curOp = null;
-										processOperations();
-									}
-								});
-							} else {
-								curOp = null;
-							}
+								if (!ent) {
+									curOp = null;
+									processOperations();
+								}
+							});
 						});
 						break;
 					case 'truncate':
 						connectSock(function (sock) {
-							if (sock) {
-								truncateLog(sock, curOp.source, curOp.limit, function() {
-									curOp = null;
-									processOperations();
-								});
-							} else {
+							truncateLog(sock, cred, curOp.source, curOp.limit, function() {
 								curOp = null;
-							}
+								processOperations();
+							});
 						});
 						break;
 					case 'stat':
 						connectSock(function (sock) {
-							if (sock) {
-								getStat(sock, function(stat) {
-									curOp.callback(stat);
+							getStat(sock, cred, function(stat) {
+								curOp.callback(stat);
 
-									if (!stat) {
-										curOp = null;
-										processOperations();
-									}
-								});
-							} else {
-								curOp = null;
-							}
+								if (!stat) {
+									curOp = null;
+									processOperations();
+								}
+							});
 						});
 						break;
 				}

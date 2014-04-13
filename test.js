@@ -6,8 +6,24 @@
 var http = require('http'),
 	loghub = require('./loghub');
 
-var hub = loghub.connect(10000, 'localhost');
-var log = loghub.connect(10001, 'localhost');
+var hub = loghub.connect(10000, 'localhost', {
+	useTls: true,
+	skipCertValidation: true,
+	credentials: {
+		user: 'admin',
+		password: 'admin'
+	},
+	error: function(err) {
+		console.log(err);
+	}
+});
+var log = loghub.connect(10001, 'localhost', {
+	useTls: true,
+	skipCertValidation: true,
+	error: function(err) {
+		console.log(err);
+	}
+});
 
 var srv = http.createServer(function (req, resp) {
 	log.write(1, 'HTTP', 'Got request ' + req.url + '.');
