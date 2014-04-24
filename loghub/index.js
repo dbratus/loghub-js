@@ -124,7 +124,7 @@ exports.connect = function(port, host, options) {
 			};
 
 			sock = net.connect(opt, function() {
-				if (options.useTls) {
+				if (options.useTLS) {
 					opt = {
 						socket: sock,
 						rejectUnauthorized: !options.skipCertValidation

@@ -18,7 +18,7 @@ var http = require('http'),
 
 //Connecting to log at localhost:10001.
 var log = loghub.connect(10001, 'localhost', {
-	useTls: true,
+	useTLS: true,
 	//skipCertValidation: true, If the certificate is not signed by CA.
 	credentials: {
 		user: 'writer',
@@ -51,7 +51,7 @@ var http = require('http'),
 
 //Connecting to hub at localhost:10000.
 var hub = loghub.connect(10000, 'localhost', {
-	useTls: true,
+	useTLS: true,
 	//skipCertValidation: true, If the certificate is not signed by CA.
 	credentials: {
 		user: 'admin',
@@ -110,7 +110,7 @@ var http = require('http'),
 
 //Connecting to hub at localhost:10000.
 var hub = loghub.connect(10000, 'localhost', {
-	useTls: true,
+	useTLS: true,
 	//skipCertValidation: true, If the certificate is not signed by CA.
 	credentials: {
 		user: 'admin',
@@ -135,7 +135,7 @@ var http = require('http'),
 	loghub = require('loghub');
 
 var hub = loghub.connect(10000, 'localhost', {
-	useTls: true,
+	useTLS: true,
 	//skipCertValidation: true, If the certificate is not signed by CA.
 	credentials: {
 		user: 'admin',

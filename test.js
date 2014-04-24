@@ -7,7 +7,7 @@ var http = require('http'),
 	loghub = require('./loghub');
 
 var hub = loghub.connect(10000, 'localhost', {
-	useTls: true,
+	useTLS: true,
 	skipCertValidation: true,
 	credentials: {
 		user: 'admin',
@@ -18,7 +18,7 @@ var hub = loghub.connect(10000, 'localhost', {
 	}
 });
 var log = loghub.connect(10001, 'localhost', {
-	useTls: true,
+	useTLS: true,
 	skipCertValidation: true,
 	error: function(err) {
 		console.log(err);
